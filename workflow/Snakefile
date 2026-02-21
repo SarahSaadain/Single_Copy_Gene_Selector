@@ -1,0 +1,40 @@
+################################################
+# Snakefile for SCG Selector Pipeline
+# This Snakefile orchestrates the workflow for selecting single-copy genes (SCG) for downstream analysis by including various rule files that handle different steps of the analysis.
+################################################
+
+# Include rule files for different steps of the pipeline
+# Each rule file corresponds to a specific task in the workflow
+
+# initialize_pipeline.smk: Sets up initial configurations and outputs 
+# information for the pipeline.
+include: "rules/initialize_pipeline.smk"
+
+# helpers.py: Contains helper functions used across multiple rules.
+include: "scripts/helpers.py"
+
+# identify_scg_with_busco.smk: contains rules to identify single-copy genes using BUSCO.
+include: "rules/identify_scg_with_busco.smk"
+
+# map_reads_to_library.smk: contains rules to map sequencing reads to the TE library.
+include: "rules/map_reads_to_library.smk"
+
+# rank_scg.smk: contains rules to rank single-copy genes based on their coverage and other statistics.
+include: "rules/rank_scg.smk"
+
+# Get the list of species IDs (e.g., ["Dfun", "Dmel", ...])
+species_list = list(config["species"].keys())
+
+# Define the all rule to specify the final targets of the workflow
+# This rule ensures that all necessary processing is completed for each species
+rule all:
+    input:
+        expand("results/{species}/{species}_relevant_scg.fasta", species=species_list)
+
+# Add logging for workflow completion
+onsuccess:
+    logger.info("Workflow finished, no error")
+
+# Add logging for workflow errors
+onerror:
+    logger.error("An error occurred")

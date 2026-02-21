@@ -1,0 +1,11 @@
+# config.yaml - Configuration file for aDNA pipeline
+species:
+  demo:
+    name: demo
+    lineage: drosophilidae_odb12
+    settings:
+      num_top_scgs: 100
+      min_length_scg: 1500
+    reads:
+      - /demo_data/demo.fastq.gz
+    reference: /demo_data/Dfun_reference_genome.fasta
