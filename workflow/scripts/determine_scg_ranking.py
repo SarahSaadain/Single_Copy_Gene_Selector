@@ -3,8 +3,6 @@ import numpy as np
 import logging
 import sys
 
-VARIATION_THRESHOLD = 15  # tune this
-
 stats_files = snakemake.input.stats  # list of JSON files from Step 1
 summary_file = snakemake.output.best_scgs
 log_filename = snakemake.log[0]
