@@ -5,14 +5,15 @@ rule determine_scg_ranking_across_samples:
                 sample=get_samples_of_species(wildcards.species)
             )
     output:
-        best_scgs = "results/{species}/{species}_scg_ranked.tsv"
+        best_scgs = "results/{species}/{species}_scg_ranked.tsv",
+        best_scgs_json = "results/{species}/{species}_scg_ranked.json"
     message: "Determining best SCG for {input}"
     log: "results/{species}/{species}_scg_ranked.log"
     conda:
         "../envs/python.yaml"
     script: "../scripts/determine_scg_ranking.py"
 
-rule determine_scg_stats_from_bam:
+rule compute_scg_stats_for_bam:
     input:
         bam = "results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.bam",
         bai = "results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.bam.bai"
@@ -32,7 +33,7 @@ rule filter_top_scgs_tes:
         relevant_contigs="results/{species}/{species}_relevant_scg.txt",
         relevant_contigs_bed="results/{species}/{species}_relevant_scg.bed"
     params:
-        num_top_scgs=lambda wildcards: config["species"][wildcards.species].get("settings", {}).get("num_top_scgs", 100)
+        num_top_scgs=lambda wildcards: config["species"][wildcards.species].get("settings", {}).get("num_top_scgs", 50)
     shell:
         """
         awk 'NR>1 && NR<={params.num_top_scgs}+1 {{print $1}}' {input.ranked_scgs} | sort -u > {output.relevant_contigs}
