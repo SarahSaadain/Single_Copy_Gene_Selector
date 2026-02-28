@@ -1,6 +1,10 @@
 # Single_Copy_Gene_Selector
 This repository contains a Snakemake pipeline which can be used to determine the best SCGs for aDNA downstream analysis.
 
+# Setup Instructions
+
+Before running the pipeline, ensure you have an environment with Snakemake and the required dependencies installed. For more information, see the [Pipeline Setup Guide](config/README.md).
+
 ## SCG Selection with Mixed Modern and Ancient Reads
 
 ### The Core Problem
