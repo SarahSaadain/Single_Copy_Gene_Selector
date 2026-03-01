@@ -15,7 +15,7 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 # ─────────────────────────────────────────────────────────────────────────────
 
 depth_variance_decay    <- 0.15
-depth_consistency_decay <- 4
+depth_consistency_decay <- 0.25
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Component 1: Breadth
@@ -92,12 +92,12 @@ p_variation <- ggplot(variation_df, aes(x = max_variation, y = score)) +
 
 consistency_df <- tibble(
   depth_deviation = seq(0, 20, length.out = 500),
-  score           = exp(-depth_deviation / depth_consistency_decay)
+  score           = exp(-depth_deviation * depth_consistency_decay)
 )
 
 consistency_refs <- tibble(
   depth_deviation = c(1, 3, 6, 12),
-  score           = exp(-c(1, 3, 6, 12) / depth_consistency_decay),
+  score           = exp(-c(1, 3, 6, 12) * depth_consistency_decay),
   label           = paste0("dev=", c(1, 3, 6, 12))
 )
 
@@ -110,7 +110,7 @@ p_consistency <- ggplot(consistency_df, aes(x = depth_deviation, y = score)) +
   scale_x_continuous(breaks = seq(0, 20, 2)) +
   labs(
     title    = "Score: Depth Consistency",
-    subtitle = paste0("score_depth_consistency = exp(-depth_deviation / ", depth_consistency_decay, ")"),
+    subtitle = paste0("score_depth_consistency = exp(-depth_deviation * ", depth_consistency_decay, ")"),
     x        = "depth_deviation  (MAD-normalised distance from global median)",
     y        = "Score contribution"
   ) +
@@ -126,70 +126,7 @@ p_consistency <- ggplot(consistency_df, aes(x = depth_deviation, y = score)) +
 # Save individual plots
 # ─────────────────────────────────────────────────────────────────────────────
 
-#ggsave(file.path(output_dir, "curve_breadth.pdf"),      p_breadth,      width = 7, height = 5)
 ggsave(file.path(output_dir, "curve_breadth.png"),      p_breadth,      width = 7, height = 5, dpi = 150)
-#ggsave(file.path(output_dir, "curve_depth_variation.pdf"),   p_variation,    width = 7, height = 5)
 ggsave(file.path(output_dir, "curve_depth_variation.png"),   p_variation,    width = 7, height = 5, dpi = 150)
-#ggsave(file.path(output_dir, "curve_depth_consistency.pdf"), p_consistency,  width = 7, height = 5)
 ggsave(file.path(output_dir, "curve_depth_consistency.png"), p_consistency,  width = 7, height = 5, dpi = 150)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Combined panel (all three curves together)
-# ─────────────────────────────────────────────────────────────────────────────
-
-combined_df <- bind_rows(
-  tibble(
-    x         = seq(0, 1, length.out = 500),
-    score     = x,
-    component = "Breadth",
-    x_label   = "mean_breadth"
-  ),
-  tibble(
-    x         = seq(0, 30, length.out = 500),
-    score     = exp(-x * depth_variance_decay),
-    component = "Depth Variation",
-    x_label   = "max_variation"
-  ),
-  tibble(
-    x         = seq(0, 20, length.out = 500),
-    score     = exp(-x / depth_consistency_decay),
-    component = "Depth Consistency",
-    x_label   = "depth_deviation"
-  )
-) %>%
-  mutate(component = factor(component,
-                            levels = c("Breadth", "Depth Variation", "Depth Consistency")))
-
-component_colours <- c(
-  "Breadth"           = "#2196F3",
-  "Depth Variation"   = "#4CAF50",
-  "Depth Consistency" = "#FF9800"
-)
-
-p_combined <- ggplot(combined_df, aes(x = x, y = score, colour = component)) +
-  geom_line(linewidth = 1.2) +
-  facet_wrap(~ component, scales = "free_x", ncol = 3) +
-  scale_colour_manual(values = component_colours, guide = "none") +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-  labs(
-    title    = "SCG Scoring Functions",
-    subtitle = paste0(
-      "Breadth: identity  |  ",
-      "Depth Variation: exp(-x \u00d7 ", depth_variance_decay, ")  |  ",
-      "Depth Consistency: exp(-x / ", depth_consistency_decay, ")"
-    ),
-    x     = NULL,
-    y     = "Score contribution (0\u20131)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.minor = element_blank(),
-    strip.text       = element_text(face = "bold", size = 11),
-    plot.title       = element_text(face = "bold", size = 14),
-    plot.subtitle    = element_text(colour = "grey40", family = "mono", size = 8)
-  )
-
-ggsave(file.path(output_dir, "curve_all_components.pdf"), p_combined, width = 13, height = 5)
-ggsave(file.path(output_dir, "curve_all_components.png"), p_combined, width = 13, height = 5, dpi = 150)
-
-message("Scoring curve plots written to: ", output_dir)
