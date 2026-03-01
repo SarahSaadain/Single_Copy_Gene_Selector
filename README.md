@@ -38,11 +38,15 @@ This is where the pipeline diverges most sharply from a naive BUSCO-only approac
 
 **Breadth of coverage** (`score_breadth`) is the mean breadth across all samples. A gene that isn't reliably covered across the length of its sequence is useless for normalization, even if it's deeply covered in patches.
 
+![Breadth Scoring](docs/img/curve_breadth.png)
+
 **Depth variation** (`score_depth_variation`) is penalized exponentially using the ratio of `max_depth / mean_median_depth` (the maximum depth across all samples divided by the mean of per-sample median depths). This is computed as:
 
 ```
-score_depth_variation = exp(-max_variation × 0.3)
+score_depth_variation = exp(-max_variation × 0.15)
 ```
+
+![Depth Variante Scoring](docs/img/curve_depth_variation.png)
 
 A true single-copy gene should have relatively uniform depth. Genes with extreme local pile-ups — caused by repetitive elements (such as microsatellites embedded within or near the gene), alignment artifacts, or paralogs missed by BUSCO — are downranked harshly.
 
@@ -50,10 +54,14 @@ A true single-copy gene should have relatively uniform depth. Genes with extreme
 
 ```
 depth_deviation = |median_depth_scg - global_median_depth| / (global_MAD + ε)
-score_depth_consistency = exp(-depth_deviation / 3)
+score_depth_consistency = exp(-depth_deviation / 4)
 ```
 
 where `global_median_depth` and `global_MAD` are derived from the distribution of per-SCG median depths (each being the mean of per-sample median depths). SCGs that are consistently under- or over-represented relative to the bulk of SCGs are likely not truly single-copy in practice, even if BUSCO said they were.
+
+![Depth Consistency Scoring](docs/img/curve_depth_consistency.png)
+
+**Final Score**
 
 The final score is:
 

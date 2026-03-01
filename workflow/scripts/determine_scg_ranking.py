@@ -5,7 +5,7 @@ import sys
 
 stats_files = snakemake.input.stats  # list of JSON files from Step 1
 summary_file = snakemake.output.best_scgs
-json_file = snakemake.output.json_summary  # add this to your snakemake rule output
+json_file = snakemake.output.best_scgs_json  # add this to your snakemake rule output
 log_filename = snakemake.log[0]
 
 logging.basicConfig(
@@ -113,8 +113,8 @@ logging.info(f"Median depth: {median_depth:.2f} (MAD: {mad_depth:.2f})")
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 5: Score each SCG
 # ─────────────────────────────────────────────────────────────────────────────
-depth_variance_decay = 0.3
-depth_consistency_decay = 3
+depth_variance_decay = 0.15
+depth_consistency_decay = 4
 
 scg_scores = {}
 for scg, vals in scg_summary.items():
