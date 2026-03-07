@@ -2,7 +2,7 @@
 
 def get_samples_of_species(species):
 
-    reads = config["species"][species]["reads"]
+    reads = config.get("species", {}).get(species, {}).get("reads")
 
     if not reads:
         raise ValueError(f"No reads found for species {species} in config.")
@@ -19,7 +19,7 @@ def get_samples_of_species(species):
     return samples
 
 def get_path_of_sample(species, sample):
-    reads = config["species"][species]["reads"]
+    reads = config.get("species", {}).get(species, {}).get("reads")
 
     if not reads:
         raise ValueError(f"No reads found for species {species} in config.")
@@ -42,7 +42,7 @@ def get_sample_id_for_sample_path(sample_path):
     return sample_id
 
 def get_reference_of_species(species):
-    reference = config["species"][species]["reference"]
+    reference = config.get("species", {}).get(species, {}).get("reference")
 
     if not reference:
         raise ValueError(f"No reference found for species {species} in config.")

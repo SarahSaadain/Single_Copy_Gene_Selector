@@ -57,7 +57,7 @@ rule index_library_for_mapping:
         "results/{species}/scg_library/{species}_scg_library_bwa_index.log"
     message: "Indexing SCG and TE library {input} with BWA2"
     wrapper:
-        "v7.2.0/bio/bwa-mem2/index"
+        "v9.3.0/bio/bwa-mem2/index"
 
 # This rule maps sequencing reads of each sample to the combined SCG and TE library
 rule map_reads_to_scg_library:
@@ -79,7 +79,7 @@ rule map_reads_to_scg_library:
         sort_extra="",  # Extra args for samtools/picard sorts.
     threads: 10
     wrapper:
-        "v7.6.0/bio/bwa-mem2/mem"
+        "v9.3.0/bio/bwa-mem2/mem"
 
 
 rule convert_sam_to_bam_reads_to_library:
@@ -91,7 +91,7 @@ rule convert_sam_to_bam_reads_to_library:
     message: "Converting SAM to BAM for {input}"
     threads: 8
     wrapper:
-        "v7.5.0/bio/samtools/view"
+        "v9.3.0/bio/samtools/view"
 
 rule remove_unmapped_reads_from_bam_reads_to_library:
     input:
@@ -103,7 +103,7 @@ rule remove_unmapped_reads_from_bam_reads_to_library:
         extra="-b -F 4",  # optional params string
     threads: 2
     wrapper:
-        "v7.5.0/bio/samtools/view"
+        "v9.3.0/bio/samtools/view"
 
 rule  sort_bam_reads_to_library:
     input:
@@ -115,7 +115,7 @@ rule  sort_bam_reads_to_library:
         "results/{species}/reads/mapped_scg_library/{sample}_sort_bam.log",
     threads: 8
     wrapper:
-        "v7.5.0/bio/samtools/sort"
+        "v9.3.0/bio/samtools/sort"
 
 rule deduplicate_bam_with_dedup:
     input:
@@ -162,7 +162,7 @@ rule sort_dedup_bam_reads_to_library:
         "results/{species}/reads/mapped_scg_library/{sample}.sorted.dedupped.bam.log",
     threads: 10
     wrapper:
-        "v7.5.0/bio/samtools/sort"
+        "v9.3.0/bio/samtools/sort"
 
 # Rule: Index BAM file
 # SAMTOOLS doesn’t parallelize the indexing work — it only parallelizes compression/decompression.
@@ -177,7 +177,7 @@ rule index_bam_reads_to_library:
         extra="",  # optional params string
     threads: 5
     wrapper:
-        "v7.5.0/bio/samtools/index"
+        "v9.3.0/bio/samtools/index"
 
 # Rule: Index BAM file
 # SAMTOOLS doesn’t parallelize the indexing work — it only parallelizes compression/decompression.
@@ -192,4 +192,4 @@ rule index_dedup_bam_reads_to_library:
         extra="",  # optional params string
     threads: 5
     wrapper:
-        "v7.5.0/bio/samtools/index"
+        "v9.3.0/bio/samtools/index"

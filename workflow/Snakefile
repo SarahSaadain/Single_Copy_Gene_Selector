@@ -23,7 +23,7 @@ include: "rules/map_reads_to_library.smk"
 include: "rules/rank_scg.smk"
 
 # Get the list of species IDs (e.g., ["Dfun", "Dmel", ...])
-species_list = list(config["species"].keys())
+species_list = list(config.get("species", {}).keys())
 
 # Define the all rule to specify the final targets of the workflow
 # This rule ensures that all necessary processing is completed for each species

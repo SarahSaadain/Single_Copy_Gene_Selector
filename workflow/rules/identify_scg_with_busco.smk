@@ -4,7 +4,7 @@
 
 rule prepare_reference:
     input:
-        ref=lambda wildcards: config["species"][wildcards.species]["reference"]
+        ref=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("reference")
     output:
         ref_link="results/{species}/ref/{reference}.fasta"
     message: "Preparing reference genome {wildcards.reference} for {wildcards.species}"
@@ -33,12 +33,12 @@ rule run_busco:
     message: "Running BUSCO to identify single copy genes for {wildcards.species}"
     params:
         mode="genome",
-        lineage=lambda wildcards: config["species"][wildcards.species]["lineage"],
+        lineage=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("lineage"),
         # optional parameters
         extra="",
     threads: 8
     wrapper:
-        "v7.3.0/bio/busco"
+        "v9.3.0/bio/busco"
 
 rule prepare_scg_library:
     input:
@@ -60,6 +60,6 @@ rule prepare_scg_library:
     conda:
         "../envs/python.yaml"
     params:
-        min_length_scg=lambda wildcards: config["species"][wildcards.species].get("settings", {}).get("min_length_scg", 2000)
+        min_length_scg=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("settings", {}).get("min_length_scg", 2000)
     script:
         "../scripts/get_scg_from_busco.py"
