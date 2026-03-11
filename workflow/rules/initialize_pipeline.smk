@@ -134,7 +134,7 @@ for i in range(1, len(sys.argv)):
 # =================================================================================================
 #     Workflow Header Logging
 # =================================================================================================
-# Main aDNA Pipeline header, helping with debugging etc for user issues
+# Main SCG Pipeline header, helping with debugging etc for user issues
 logger.info("SCG Selector Pipeline " + TE_Analysis_Pipeline_version + " run:")
 
 logger.info("\tDate:               " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

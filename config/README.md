@@ -23,7 +23,7 @@ The pipeline requires two inputs per species:
 All pipeline parameters are controlled through `config.yaml`. A minimal working example is shown below:
 
 ```yaml
-# config.yaml - Configuration file for aDNA pipeline
+# config.yaml - Configuration file for SCG Selector Workflow
 species:
   demo:
     name: demo
