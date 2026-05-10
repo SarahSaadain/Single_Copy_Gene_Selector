@@ -32,7 +32,8 @@ logging.basicConfig(  # Basic config ASAP (for fallback)
 snakemake.utils.min_version("9.9.0")
 basedir = workflow.basedir
 
-TE_Analysis_Pipeline_version = "0.0.1" 
+sys.path.insert(0, os.path.join(basedir, "scripts"))
+from version import __version__ as SCG_Selector_version
 
 # =================================================================================================
 #     Configuration Files and Reporting
@@ -98,10 +99,10 @@ try:
     )
     out, err = process.communicate()
     out = out.decode("ascii")
-    TE_Analysis_Pipeline_git_hash = out.strip()
-    if TE_Analysis_Pipeline_git_hash:
-        TE_Analysis_Pipeline_version += "-" + TE_Analysis_Pipeline_git_hash
-    del process, out, err, TE_Analysis_Pipeline_git_hash
+    SCG_Selector_git_hash = out.strip()
+    if SCG_Selector_git_hash:
+        SCG_Selector_version += "-" + SCG_Selector_git_hash
+    del process, out, err, SCG_Selector_git_hash
 except:
     pass
 
@@ -135,9 +136,10 @@ for i in range(1, len(sys.argv)):
 #     Workflow Header Logging
 # =================================================================================================
 # Main SCG Pipeline header, helping with debugging etc for user issues
-logger.info("SCG Selector Pipeline " + TE_Analysis_Pipeline_version + " run:")
+logger.info("SCG Selector Pipeline " + SCG_Selector_version + " run:")
 
 logger.info("\tDate:               " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+logger.info("\tProcess ID:         " + str(os.getpid()))
 logger.info("\tPlatform:           " + pltfrm)
 logger.info("\tHost:               " + hostname)
 logger.info("\tUser:               " + username)
