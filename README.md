@@ -13,13 +13,13 @@ Single-copy genes (SCGs) can be used as calibrators for read coverage normalizat
 
 ### Step 1: Identify Candidate SCGs via BUSCO (from Modern Reference)
 
-The pipeline starts with BUSCO run against a **modern reference genome**. BUSCO identifies genes that are "Complete" and single-copy within the lineage's ortholog database (e.g., `drosophilidae_odb12`). From these, the pipeline extracts the actual nucleotide sequences of each SCG using the genomic coordinates in BUSCO's `full_table.tsv`, filtering out any that are too short (default: ≥2,000 bp). These sequences form the **SCG library** — essentially a custom miniature reference of candidate single-copy loci.
+The pipeline starts with BUSCO run against a **modern reference genome**. BUSCO identifies genes that are "Complete" and single-copy within the lineage's ortholog database (e.g., `drosophilidae_odb12`). From these, the pipeline extracts the actual nucleotide sequences of each SCG using the genomic coordinates in BUSCO's `full_table.tsv`, filtering out any that are too short (default: >= 4,000 bp) or too long (default: <= 8,000 bp). 
 
 This step is necessary but not sufficient. BUSCO tells you that a gene appears single-copy in a high-quality modern genome assembly, but it says nothing about how well that gene will actually behave when you map real, degraded, ancient reads onto it.
 
 ### Step 2: Map All Samples (Modern + Ancient) to the SCG Library
 
-Every sample — both modern reference-quality samples and ancient degraded samples — is independently mapped to this SCG library. For each sample, the pipeline computes the following statistics per SCG using `pysam`'s `count_coverage()`:
+Every sample, both modern reference-quality samples and ancient degraded samples, is independently mapped to this SCG library. For each sample, the pipeline computes the following statistics per SCG using `pysam`'s `count_coverage()`:
 
 - **Min depth** — the minimum read depth at any position in the gene
 - **Average depth** — mean read depth across all positions
@@ -28,7 +28,7 @@ Every sample — both modern reference-quality samples and ancient degraded samp
 - **Covered bases** — the absolute number of positions with depth > 0
 - **Breadth of coverage** — the proportion of the gene's length covered by at least one read (`covered_bases / length`)
 
-I use `count_coverage()` instead of `samtools depth` as it is much faster. The difference is, that `count_coverage()` counts per-base observations (A/C/G/T) rather than spanning reads, so reads with deletions at a given position contribute 0 depth there. E.g. 5 reads overlapping with a deletion of one nucleotide in one read will still be counted as 5x depth in `samtools depth` but 4x in `count_coverage()` for this position. This difference is negligible for typical coverage estimation.
+> ℹ️ Note: I use `count_coverage()` instead of `samtools depth` as it is much faster. The difference is, that `count_coverage()` counts per-base observations (A/C/G/T) rather than spanning reads, so reads with deletions at a given position contribute 0 depth there. E.g. 5 reads overlapping with a deletion of one nucleotide in one read will still be counted as 5x depth in `samtools depth` but 4x in `count_coverage()` for this position. This difference is negligible for typical coverage estimation.
 
 These stats are stored per-sample as JSON files, giving an idea of how each SCG actually behaves across the diversity of the dataset.
 
@@ -45,7 +45,7 @@ The `determine_scg_ranking.py` script aggregates stats across all BAM files and 
 ```
 score_depth_variation = exp(-max_variation × 0.15)
 ```
-Please note that the `0.15` can be adjusted but this has proven to work well in practice. Higher values will penalize more strongly.
+> ℹ️ Please note that the `0.15` can be adjusted but this has proven to work well in practice. Higher values will penalize more strongly.
 
 ![Depth Variante Scoring](docs/img/curve_depth_variation.png)
 
@@ -66,8 +66,9 @@ score_depth_consistency = exp(-depth_deviation * 0,25)
 
 In short: SCGs that are consistently under- or over-represented relative to the bulk of SCGs are likely not truly single-copy in practice, even if BUSCO said they were. The more consistently represented they are, the more likely they are to represent a true single-copy gene.
 
-Note: that ε is a small number to avoid division by zero.
-Note: `0.25` can be adjusted but this has proven to work well in practice. Higher values will penalize more strongly.
+> ℹ️ Note: that ε is a small number to avoid division by zero.
+
+> ℹ️ Note: `0.25` can be adjusted but this has proven to work well in practice. Higher values will penalize more strongly.
 
 ![Depth Consistency Scoring](docs/img/curve_depth_consistency.png)
 
