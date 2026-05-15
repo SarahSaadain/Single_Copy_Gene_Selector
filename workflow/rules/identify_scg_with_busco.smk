@@ -60,6 +60,7 @@ rule prepare_scg_library:
     conda:
         "../envs/python.yaml"
     params:
-        min_length_scg=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("settings", {}).get("min_length_scg", 2000)
+        min_length_scg=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("settings", {}).get("min_length_scg", 4000),
+        max_length_scg=lambda wildcards: config.get("species", {}).get(wildcards.species, {}).get("settings", {}).get("max_length_scg", 8000)
     script:
         "../scripts/get_scg_from_busco.py"

@@ -44,14 +44,13 @@ rule trigger_map_reads_to_scg_library:
         touch {output}
         """
 
-
 if _mapper == "minimap2":
 
     rule index_library_for_mapping_minimap2:
         input:
             target="results/{species}/scg_library/{species}_scg_library.fasta"
         output:
-            "results/{species}/scg_library/{species}_scg_library.fasta.mmi",
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.mmi"),
         log:
             "results/{species}/scg_library/{species}_scg_library_minimap2_index.log"
         message: "Indexing SCG and TE library {input} with minimap2"
@@ -63,14 +62,13 @@ if _mapper == "minimap2":
             query=map_reads_to_scg_library_input_reads,
             target="results/{species}/scg_library/{species}_scg_library.fasta.mmi",
         output:
-            "results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.bam",
+            temp("results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.with_unmapped.bam"),
         log:
             "results/{species}/reads/mapped_scg_library/{sample}_minimap2.log",
         message: "Mapping reads of {wildcards.sample} to {wildcards.species} SCG and TE library with minimap2"
         params:
             extra="-ax sr",
             sorting="coordinate",
-            sort_extra="-F 4",
         threads: 10
         wrapper:
             "v9.3.0/bio/minimap2/aligner"
@@ -82,11 +80,11 @@ else:
         input:
             "results/{species}/scg_library/{species}_scg_library.fasta"
         output:
-            "results/{species}/scg_library/{species}_scg_library.fasta.0123",
-            "results/{species}/scg_library/{species}_scg_library.fasta.amb",
-            "results/{species}/scg_library/{species}_scg_library.fasta.ann",
-            "results/{species}/scg_library/{species}_scg_library.fasta.bwt.2bit.64",
-            "results/{species}/scg_library/{species}_scg_library.fasta.pac",
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.0123"),
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.amb"),
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.ann"),
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.bwt.2bit.64"),
+            temp("results/{species}/scg_library/{species}_scg_library.fasta.pac"),
         log:
             "results/{species}/scg_library/{species}_scg_library_bwa_index.log"
         message: "Indexing SCG and TE library {input} with BWA-MEM2"
@@ -98,18 +96,29 @@ else:
             reads=map_reads_to_scg_library_input_reads,
             idx=multiext("results/{species}/scg_library/{species}_scg_library.fasta", ".amb", ".ann", ".bwt.2bit.64", ".pac", ".0123"),
         output:
-            "results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.bam",
+            temp("results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.with_unmapped.bam"),
         log:
             "results/{species}/reads/mapped_scg_library/{sample}_bwa.log",
         message: "Mapping reads of {wildcards.sample} to {wildcards.species} SCG and TE library with BWA-MEM2"
         params:
             sort="samtools",
             sort_order="coordinate",
-            sort_extra="-F 4",
         threads: 10
         wrapper:
             "v9.3.0/bio/bwa-mem2/mem"
 
+
+rule remove_unmapped_reads_from_bam_reads_to_library:
+    input:
+        "results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.with_unmapped.bam"
+    output:
+        bam="results/{species}/reads/mapped_scg_library/{sample}_scg_library.sorted.bam"
+    message: "Converting SAM to BAM for {input}"
+    params:
+        extra="-b -F 4",  # optional params string
+    threads: 2
+    wrapper:
+        "v9.3.0/bio/samtools/view"
 
 # Rule: Index BAM file
 # SAMTOOLS doesn't parallelize the indexing work — it only parallelizes compression/decompression.

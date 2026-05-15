@@ -9,8 +9,9 @@ species:
     name: demo
     lineage: drosophilidae_odb12
     settings:
-      num_top_scgs: 100
-      min_length_scg: 1500
+      num_top_scgs: 20
+      min_length_scg: 4000
+      max_length_scg: 8000
     reads:
       - /demo_data/demo.fastq.gz
     reference: /demo_data/Dfun_reference_genome.fasta

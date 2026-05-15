@@ -7,7 +7,7 @@ import pandas as pd
 from snakemake.script import snakemake
 
 
-def extract_busco_sequences(df, reference_fasta, min_length_scg) -> List[Tuple[str, str]]:
+def extract_busco_sequences(df, reference_fasta, min_length_scg, max_length_scg) -> List[Tuple[str, str]]:
     fasta_entries = []
 
     processed_seqs = 0
@@ -31,7 +31,11 @@ def extract_busco_sequences(df, reference_fasta, min_length_scg) -> List[Tuple[s
                 start, end = end, start
 
             if end - start <= min_length_scg:
-                logger.warning(f"Skipping {busco_id}: length {end - start} is less than minimum {min_length_scg}.")
+                logger.warning(f"Skipping {busco_id}: length {end - start} is less than minimum length ({min_length_scg}).")
+                continue
+
+            if end - start >= max_length_scg:
+                logger.warning(f"Skipping {busco_id}: length {end - start} exceeds maximum length ({max_length_scg}).")
                 continue
 
             seq = extract_sequence(reference_fasta, chrom, start, end)
@@ -74,6 +78,7 @@ def main():
     full_table_path = snakemake.input.busco_full_table
     reference_fasta = snakemake.input.ref_genome[0]
     min_length_scg = snakemake.params.min_length_scg
+    max_length_scg = snakemake.params.max_length_scg
     out_file = snakemake.output.scg
 
     if not os.path.isfile(full_table_path):
@@ -111,7 +116,7 @@ def main():
     # Keep only complete BUSCOs with valid coordinates
     df = df[df["Status"].str.contains("Complete", na=False)]
 
-    fasta_entries = extract_busco_sequences(df, reference_fasta, min_length_scg)
+    fasta_entries = extract_busco_sequences(df, reference_fasta, min_length_scg, max_length_scg)
 
     logger.info(f"Extracted {len(fasta_entries)} SCG sequences from BUSCO results.")
 
