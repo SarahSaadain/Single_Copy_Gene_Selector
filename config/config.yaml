@@ -1,4 +1,9 @@
 # config.yaml - Configuration file for aDNA pipeline
+
+# Mapping settings (optional — defaults shown)
+mapping:
+  mapper: minimap2  # minimap2 (default) or bwa-mem2
+
 species:
   demo:
     name: demo
